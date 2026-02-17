@@ -7,9 +7,16 @@ from tqdm import tqdm
 import re
 from sc_utils import evaluate_embeddings
 
+import argparse
 
 
-path = '/home/lmartinez/Data/scFoundation_Embeddings'
+parser.add_argument('--path', type=str, required=True, help='Path to the h5ad file')
+
+args = parser.parse_args()
+
+
+path = args.path
+
 
 datasets = {
     'Blood' : 'b225ee37-5e06-4e49-9c25-c3d7b5008dab.h5ad',
