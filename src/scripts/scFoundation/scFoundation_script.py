@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 from tqdm import tqdm
 import re
 from sc_utils import evaluate_embeddings
-
+import json
 import argparse
 
 
@@ -41,4 +41,12 @@ for name, file in tqdm(datasets.items()):
     scF_per = evaluate_embeddings(scF_emb, adata.obs.cell_type)
     scFoundation_scores[name] = scF_per
 
-evaluate_embeddings(adata.obsm['X_pca'], adata.obs.cell_type)
+
+# Save to file
+output_filename = f"{Dataset}_scFoundation_results.json"
+with open(output_filename, 'w') as f:
+    json.dump(scFoundation_scores, f, indent=4)
+
+print(f"Results saved to {output_filename}")
+
+
