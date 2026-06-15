@@ -23,7 +23,7 @@ from sc_utils import evaluate_embeddings, plot_umap
 
 # Read Dataset
 
-parser = argparse.ArgumentParser(description="Run Geneformer Analysis")
+parser = argparse.ArgumentParser(description="C2S Parser")
 
 parser.add_argument('--address', type=str, required=True, help='Path to the h5ad file')
 
