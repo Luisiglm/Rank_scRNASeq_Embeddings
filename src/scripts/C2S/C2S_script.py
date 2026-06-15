@@ -18,7 +18,7 @@ import scanpy as sc
 import cell2sentence as cs
 from cell2sentence.tasks import embed_cells
 
-from sc_utils import evaluate_embeddings, plot_umap
+from sc_utils import  plot_umap
 
 
 # Read Dataset
@@ -141,7 +141,7 @@ for i in cell_embeddings:
 
 adata.obsm["c2s_cell_embeddings"] = cell_emb
 
-plot_umap(cell_emb, adata.obs.cell_type, f'{Dataset}_C2S', dpi=600)
+ari, silllhouette = plot_umap(cell_emb, adata.obs.cell_type, f'{Dataset}_C2S', dpi=600)
 
 # Create Dictionary to Store Results
 res_dict = {}
@@ -149,10 +149,8 @@ res_dict['Dataset'] = Dataset
 res_dict['ARI'] = dict()
 res_dict['Sillhouette'] = dict()
 
-C2S_perf = evaluate_embeddings(cell_emb, adata.obs.cell_type)
-
-res_dict['ARI']['C2S'] = C2S_perf[0]
-res_dict['Sillhouette']['C2S'] = C2S_perf[1]
+res_dict['ARI']['C2S'] = ari
+res_dict['Sillhouette']['C2S'] = silllhouette
 
 # Save to file
 output_filename = f"{Dataset}_C2S_results.json"
