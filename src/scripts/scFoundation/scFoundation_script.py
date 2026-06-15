@@ -1,22 +1,15 @@
 import scanpy as sc
 import numpy as np
 import os
-from sklearn.metrics import adjusted_rand_score, silhouette_score
+from sklearn.metrics import adjusted_rand_score, silhouette_score,normalized_mutual_info_score
 from sklearn.cluster import KMeans
 from tqdm import tqdm
 import re
-from sc_utils import evaluate_embeddings
-import json
-import argparse
+import matplotlib.pyplot as plt
+from sc_utils import plot_umap
 
 
-parser.add_argument('--path', type=str, required=True, help='Path to the h5ad file')
-
-args = parser.parse_args()
-
-
-path = args.path
-
+path = '/home/lmartinez/Data/scFoundation_Embeddings'
 
 datasets = {
     'Blood' : 'b225ee37-5e06-4e49-9c25-c3d7b5008dab.h5ad',
@@ -30,23 +23,21 @@ Emb_files = os.listdir(path)
 Embedding_files = [re.split('_',i)[0] for i in os.listdir(path) ]
 
 scFoundation_scores = {}
+PCA_scores = {}
+scVI_scores = {}
 
 for name, file in tqdm(datasets.items()):
     adata = sc.read_h5ad('/home/lmartinez/'+file)
     print('Loaded single cell data for: ' + name )
+    Dataset = 'Tabula sapiens '+name
     # Read file with embeddings
     file_emb = Emb_files[Embedding_files.index(name)]
     scF_emb = np.load(path + '/' + file_emb)
     print('Loaded scFoundation cell embeddings for: ' + name)
-    scF_per = evaluate_embeddings(scF_emb, adata.obs.cell_type)
+    scF_per = plot_umap(scF_emb , adata.obs["cell_type"], title = Dataset, filename = Dataset+'_scFoundation_')
     scFoundation_scores[name] = scF_per
-
-
-# Save to file
-output_filename = f"{Dataset}_scFoundation_results.json"
-with open(output_filename, 'w') as f:
-    json.dump(scFoundation_scores, f, indent=4)
-
-print(f"Results saved to {output_filename}")
-
+    PCA_per = plot_umap(adata.obsm["X_pca"], adata.obs["cell_type"], title=Dataset, filename=Dataset + '_PCA_')
+    PCA_scores[name] = PCA_per
+    sCVI_per = plot_umap(adata.obsm["X_scvi"], adata.obs["cell_type"], title=Dataset, filename=Dataset + '_scVI_')
+    scVI_scores[name] = sCVI_per
 
