@@ -1,29 +1,35 @@
 # Taken from: https://github.com/vandijklab/cell2sentence/blob/master/tutorials/c2s_tutorial_2_cell_embedding.ipynb
 
 # Python built-in libraries
-import os
+import re
 import random
-from collections import Counter
 import argparse
 
-# Third-party libraries
 import numpy as np
 from tqdm import tqdm
 
-# Single-cell libraries
 import anndata
 import scanpy as sc
 
 # Cell2Sentence imports
 import cell2sentence as cs
-from cell2sentence.tasks import embed_cells
+
+from cell2sentence.prompt_formatter import C2SPromptFormatter
+# AI packages
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
+from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mutual_info_score
+
+# Import our utils modules
 
 from sc_utils import  plot_umap
-
+import matplotlib.pyplot as plt
+ 
+import json
 
 # Read Dataset
 
-parser = argparse.ArgumentParser(description="C2S Parser")
+parser = argparse.ArgumentParser(description="Run C2S Analysis")
 
 parser.add_argument('--address', type=str, required=True, help='Path to the h5ad file')
 
@@ -36,19 +42,41 @@ print(f"Loading file from: {address}")
 
 # Read the h5ad file using the provided address
 adata = sc.read_h5ad(address)
+adata.obs['organism'] ='Homo sapiens'
 
-
-
-
-adata_obs_cols_to_keep = ["cell_type"]
+n_genes = 200
 
 # Change gene names to Symbol
-
-
 adata.var.index = adata.var['feature_name']
 # Ensure they are unique
 adata.var.index = adata.var.index.astype(str)
 adata.var_names_make_unique()
+# remove genes that have no gene symbol
+adata_obs_cols_to_keep = ["cell_type", "organism"]
+genes_to_keep = []
+
+
+for  i in range(adata.var.shape[0]):
+    match = re.search(r"^([^.]+)", adata.var.ensembl_id[i])
+    if match.group(1) != adata.var.feature_name[i]:
+        genes_to_keep.append(i)
+
+
+adata = adata[:,genes_to_keep]
+
+# Set device
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+# Load model directly from Hugging Face Hub
+model_id = "vandijklab/C2S-Scale-Gemma-2-2B"
+
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+).to(device)
+
+# Keep genes that match the vocab in the tokenizer.
+
 
 SEED = 1234
 random.seed(SEED)
@@ -67,20 +95,10 @@ raw_title = adata.uns.get('title', 'Unknown_Dataset') # Default if title missing
 # Replace spaces and slashes to make it safe for filenames
 Dataset = str(raw_title).replace(" ", "_").replace("/", "-")
 
-# Define CSModel object
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
-# Load model directly from Hugging Face Hub
-model_id = "vandijklab/C2S-Scale-Gemma-2-2B"
-
-model = AutoModelForCausalLM.from_pretrained(
-    model_id,
-).to(device)
-
+prompt_formatter = C2SPromptFormatter(task="cell_type_prediction", top_k_genes=n_genes)
+# format from arrow_ds
+formatted_hf_ds = prompt_formatter.format_hf_ds(arrow_ds)
 
 
 def embed_cells_batched( model, tokenizer, prompt_list, max_num_tokens = 1024):
@@ -118,39 +136,35 @@ start = 0
 end = batch_size
 N =  int(np.ceil(adata.X.shape[0]/batch_size))
 
-cell_embeddings = []
+embedded_cells = []
+inference_batch_size = 4
+batch_inputs = []
+idx = 0
+for sample_idx in tqdm(range(formatted_hf_ds.num_rows)):
+    # Prepare inputs
+    sample = formatted_hf_ds[sample_idx]
+    model_input_prompt_str = sample["model_input"]
+    batch_inputs.append(model_input_prompt_str)
+    idx += 1
+    # Inference on a batch of inputs
+    if (len(batch_inputs) == inference_batch_size) or (idx == formatted_hf_ds.num_rows):
+        cell_embeddings = embed_cells_batched(model, tokenizer, prompt_list=batch_inputs)
+        embedded_cells += cell_embeddings
+        batch_inputs = []
 
-for i in tqdm(range(N)):
-    samples = arrow_ds[start:end]
-    cell_sentences = samples["cell_sentence"]
-    cell_embeddings.append(embed_cells_batched(model, tokenizer, cell_sentences))
-    start += batch_size
-    end += batch_size
-    if end > adata.X.shape[0]:
-        end = adata.X.shape[0]
+embedded_cells = np.stack(embedded_cells)
 
 
-cell_emb = np.zeros((adata.X.shape[0], 2304))
 
-j = 0
 
-for i in cell_embeddings:
-    for k in i:
-        cell_emb[j,:] = k
-        j +=1
 
-adata.obsm["c2s_cell_embeddings"] = cell_emb
-
-ari, silllhouette = plot_umap(cell_emb, adata.obs.cell_type, f'{Dataset}_C2S', dpi=600)
+ari, nmi = plot_umap(embedded_cells, adata.obs.cell_type, f'{Dataset}_C2S', dpi=600)
 
 # Create Dictionary to Store Results
 res_dict = {}
-res_dict['Dataset'] = Dataset
-res_dict['ARI'] = dict()
-res_dict['Sillhouette'] = dict()
+res_dict['ARI'] = ari
+res_dict['NMI'] = nmi
 
-res_dict['ARI']['C2S'] = ari
-res_dict['Sillhouette']['C2S'] = silllhouette
 
 # Save to file
 output_filename = f"{Dataset}_C2S_results.json"
