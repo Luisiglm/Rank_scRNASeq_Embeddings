@@ -1,22 +1,6 @@
 from sklearn.metrics import adjusted_rand_score, silhouette_score
-from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import scanpy as sc
-
-
-def evaluate_embeddings(embeddings, labels):
-    # Set number of clusters
-    n_classes = len(set(labels))
-    # K-Means
-    kmeans = KMeans(n_clusters=n_classes, random_state=42, n_init=10)
-    predicted_labels = kmeans.fit_predict(embeddings)
-    # ARI and Sillhouette
-    ari = adjusted_rand_score(labels, predicted_labels)
-    asw = silhouette_score(embeddings, labels)
-    print(f"  -> ARI: {ari:.4f}")
-    print(f"  -> ASW: {asw:.4f}")
-    return ari, asw
-
 
 def plot_umap(embedding, labels, title, filename=None, dpi=300):
     if filename is None:
@@ -25,6 +9,13 @@ def plot_umap(embedding, labels, title, filename=None, dpi=300):
     adata_vis = sc.AnnData(embedding)
     adata_vis.obs["cell_type"] = labels.values.astype(str)
     sc.pp.neighbors(adata_vis, use_rep="X")
+    sc.tl.leiden(adata_vis)
+    # Evaluate Leiden
+    predicted_labels = adata_vis.obs.leiden
+    ari_leiden = adjusted_rand_score(labels, predicted_labels)
+    nmi_leiden = normalized_mutual_info_score(labels, predicted_labels)
+    print(f"  -> ARI Leiden: {ari_leiden:.4f}" )
+    print(f"  -> NMI Leiden: {nmi_leiden:.4f}" )
     sc.tl.umap(adata_vis)
     sc.pl.umap(
         adata_vis,
@@ -35,3 +26,4 @@ def plot_umap(embedding, labels, title, filename=None, dpi=300):
     )
     plt.savefig(filename, dpi=dpi, bbox_inches="tight")
     plt.close()
+    return ari_leiden, nmi_leiden
