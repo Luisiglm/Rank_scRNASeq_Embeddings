@@ -22,10 +22,10 @@ Rank_scRNASeq_Embeddings/
 ├── pyproject.toml          # installs sc_utils as a local package
 ├── .gitignore
 ├── environments/
-│   ├── c2s_requirements.txt
+│   ├── C2S_requirements.txt
 │   ├── geneformer_requirements.txt
 │   ├── scgpt_requirements.txt
-│   ├── scfoundation_requirements.txt
+│   ├── scFoundation_requirements.txt
 │   └── untrained_embeddings_requirements.txt
 ├── src/
 │   └── sc_utils/
