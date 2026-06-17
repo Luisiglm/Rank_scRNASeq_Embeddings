@@ -13,6 +13,7 @@ import scanpy as sc
 
 # Cell2Sentence imports
 import cell2sentence as cs
+from sc_utils import plot_umap
 
 from cell2sentence.prompt_formatter import C2SPromptFormatter
 # AI packages
@@ -115,31 +116,6 @@ prompt_formatter = C2SPromptFormatter(task="cell_type_generation", top_k_genes=n
 formatted_hf_ds = prompt_formatter.format_hf_ds(arrow_ds)
 
 
-def plot_umap(embedding, labels, title, filename=None, dpi=300):
-    if filename is None:
-        filename = title.replace(" ", "_").lower() + ".png"
-    # Create temp AnnData for visualization
-    adata_vis = sc.AnnData(embedding)
-    adata_vis.obs["cell_type"] = labels.values.astype(str)
-    sc.pp.neighbors(adata_vis, use_rep="X")
-    sc.tl.leiden(adata_vis)
-    # Evaluate Leiden
-    predicted_labels = adata_vis.obs.leiden
-    ari_leiden = adjusted_rand_score(labels, predicted_labels)
-    nmi_leiden = normalized_mutual_info_score(labels, predicted_labels)
-    print(f"  -> ARI Leiden: {ari_leiden:.4f}" )
-    print(f"  -> NMI Leiden: {nmi_leiden:.4f}" )
-    sc.tl.umap(adata_vis)
-    sc.pl.umap(
-        adata_vis,
-        color="cell_type",
-        title=title,
-        frameon=False,
-        show=False
-    )
-    plt.savefig(filename, dpi=dpi, bbox_inches="tight")
-    plt.close()
-    return ari_leiden, nmi_leiden
 
 
 def embed_responses(formatted_hf_ds, gene_weights, tokenizer, context, chunk_size=2000):
