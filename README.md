@@ -1,5 +1,6 @@
-Here's the markdown:
-markdown# Ranking is all you Need: Random Gene Embeddings Rival Large-Scale scRNA-seq Foundation Models
+
+# Ranking is all you Need: Random Gene Embeddings Rival Large-Scale scRNA-seq Foundation Models
+---
 
 **Ellie Smartt¹, Feargus O'Gorman¹, Walter Kolch¹·², Vadim Zhernovkov¹ & Luis F. Iglesias-Martinez¹**
 
