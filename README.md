@@ -33,8 +33,9 @@ Rank_scRNASeq_Embeddings/
 │       └── helpers.py      # evaluate_embeddings, plot_umap
 ├── scripts/
 │   ├── c2s/
-│   │   ├── preprocess.py
-│   │   └── run_inference.py
+|   |   ├── C2S_possitional_loss.py
+│   │   ├── C2S_script.py
+│   │   └── C2S_ablation.py
 │   ├── geneformer/
 │   │   ├── preprocess.py
 │   │   └── run_inference.py
