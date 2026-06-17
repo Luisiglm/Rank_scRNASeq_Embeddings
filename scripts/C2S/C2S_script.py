@@ -13,6 +13,7 @@ import scanpy as sc
 
 # Cell2Sentence imports
 import cell2sentence as cs
+from sc_utils import plot_umap
 
 from cell2sentence.prompt_formatter import C2SPromptFormatter
 # AI packages
