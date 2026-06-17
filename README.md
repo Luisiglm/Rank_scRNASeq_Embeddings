@@ -40,11 +40,9 @@ Rank_scRNASeq_Embeddings/
 │   │   ├── geneformer_loglik.py
 │   │   └── geneformer_cell_embeddings.py
 │   ├── scgpt/
-│   │   ├── preprocess.py
-│   │   └── run_inference.py
+│   │   └── scGPT_script.py
 │   ├── scfoundation/
-│   │   ├── preprocess.py
-│   │   └── run_inference.py
+│   │   └── scFoundation_script.py
 │   └── untrained_embeddings/
 │       └── evaluate.py
 ├── data/
