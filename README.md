@@ -37,8 +37,8 @@ Rank_scRNASeq_Embeddings/
 │   │   ├── C2S_script.py
 │   │   └── C2S_ablation.py
 │   ├── geneformer/
-│   │   ├── preprocess.py
-│   │   └── run_inference.py
+│   │   ├── geneformer_loglik.py
+│   │   └── geneformer_cell_embeddings.py
 │   ├── scgpt/
 │   │   ├── preprocess.py
 │   │   └── run_inference.py
