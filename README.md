@@ -19,7 +19,7 @@ Rank_scRNASeq_Embeddings/
 ├── README.md
 ├── LICENSE
 ├── CITATION.cff
-├── pyproject.toml          # installs sc_utils as a local package
+├── sc_utils.toml          # installs sc_utils as a local package
 ├── .gitignore
 ├── environments/
 │   ├── C2S_requirements.txt
@@ -46,18 +46,9 @@ Rank_scRNASeq_Embeddings/
 │   │   └── run_inference.py
 │   └── untrained_embeddings/
 │       └── evaluate.py
-├── notebooks/
-│   ├── 01_results_comparison.ipynb
-│   └── 02_figures.ipynb
 ├── data/
 │   └── README.md           # instructions to download datasets
-└── results/
-    ├── c2s/
-    ├── geneformer/
-    ├── scgpt/
-    ├── scfoundation/
-    ├── untrained_embeddings/
-    └── comparison/
+
 ```
 
 ## Installation
