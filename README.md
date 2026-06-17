@@ -43,8 +43,9 @@ Rank_scRNASeq_Embeddings/
 │   │   └── scGPT_script.py
 │   ├── scfoundation/
 │   │   └── scFoundation_script.py
-│   └── untrained_embeddings/
-│       └── evaluate.py
+│   └── Untrained_embeddings/
+│   │   ├── batch_effect.py
+│       └── Untrained_cell_embeddings_script.py
 ├── data/
 │   └── README.md           # instructions to download datasets
 
