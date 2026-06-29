@@ -4,8 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sc_utils"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
+    "numpy",
     "scanpy",
     "matplotlib",
     "scikit-learn",
@@ -13,5 +14,6 @@ dependencies = [
     "igraph",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["sc_utils", "unt_ranked_embs"]

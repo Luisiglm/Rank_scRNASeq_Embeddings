@@ -1,4 +1,4 @@
-from sklearn.metrics import adjusted_rand_score, silhouette_score
+from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 import matplotlib.pyplot as plt
 import scanpy as sc
 
